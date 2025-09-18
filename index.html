@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table 3.11 Lookup Dashboard</title>
+    <title>Combined Table Lookup Dashboard</title>
     <!-- Include Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Include Chart.js via CDN for graphing capabilities -->
@@ -14,6 +14,22 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+        }
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            max-width: 900px;
+            margin: auto;
+            padding: 2rem;
+        }
+        .dashboard-card {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
         }
         .input-group {
             display: flex;
@@ -44,11 +60,15 @@
             background-color: #ffebee; /* Light red */
             border-color: #ef9a9a; /* Medium red */
         }
-        .result-grid {
+        .result-grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .result-grid-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 1rem;
-            margin-top: 1rem;
         }
         .result-item {
             padding: 1rem;
@@ -61,411 +81,604 @@
             position: relative;
         }
         .options-box {
-            position: absolute;
-            top: 20px;
-            right: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .options-box button {
+        .options-box .flex-row-container {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .options-box .input-group {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn {
+            background-color: #3b82f6;
+            color: #ffffff;
+            transition: transform 0.3s, background-color 0.3s;
+            transform-origin: center;
             cursor: pointer;
-            text-align: left;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s;
         }
-        .options-box button:hover {
-            background-color: rgba(229, 231, 235, 0.7);
+        .btn:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 p-4">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-3xl text-center">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Table 3.11 Lookup Dashboard</h1>
-        <p class="text-gray-600 mb-2">
-            Enter values for P*, t/μ₀, and n to find the full row of μ/μ₀ values from Table 3.11.
-            (For C=5)
-        </p>
+    <div class="dashboard-container">
+        <!-- Main Topic -->
+        <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
+            SSP using HN based on IPD Approximation for Mean Life
+        </h1>
 
-        <!-- Input Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="input-group">
-                <label for="p-star">Select P*:</label>
-                <select id="p-star" class="rounded-lg">
-                    <option value="0.75">0.75</option>
-                    <option value="0.9">0.9</option>
-                    <option value="0.95">0.95</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="t-mu">Select t/μ₀:</label>
-                <select id="t-mu" class="rounded-lg"></select>
-            </div>
-            <div class="input-group">
-                <label for="n-value">Select n:</label>
-                <select id="n-value" class="rounded-lg"></select>
-            </div>
-        </div>
-
-        <!-- Result Section -->
-        <div id="result-box" class="mt-8 p-6 rounded-lg border-2 bg-gray-50 transition-all duration-300">
-            <p class="text-gray-700 font-medium mb-2">The full row of μ/μ₀ values is:</p>
-            <div id="result-container" class="result-grid">
-                <p id="no-result" class="text-gray-500">Select P* and t/μ₀ values to get the results.</p>
-            </div>
-        </div>
-
-        <!-- Chart Section -->
-        <div class="mt-8 chart-container">
-            <canvas id="mu-chart"></canvas>
-            <div id="options-box" class="options-box hidden">
-                <h3 class="font-bold mb-2">Selected Options:</h3>
-                <div class="flex flex-col gap-2 text-sm">
-                    <button id="p-star-option" class="bg-blue-100 rounded-md">
-                        P*: <span id="p-star-display"></span>
-                    </button>
-                    <button id="t-mu-option" class="bg-blue-100 rounded-md">
-                        t/μ₀: <span id="t-mu-display"></span>
-                    </button>
-                    <button id="n-option" class="bg-blue-100 rounded-md">
-                        n: <span id="n-display"></span>
-                    </button>
+        <!-- First Dashboard Card -->
+        <div class="dashboard-card text-center">
+            <h2 class="text-2xl font-normal text-gray-800 mb-4">Minimum sample sizes necessary to assert the average life of a product under the conditions of IPD (ρ = 0.5) HN distribution.</h2>
+            <!-- Input Section for the first card -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-6">
+                <div class="input-group">
+                    <label for="p-star-3-7">Select P*:</label>
+                    <select id="p-star-3-7" class="rounded-lg">
+                        <option value="0.75">0.75</option>
+                        <option value="0.9">0.9</option>
+                        <option value="0.95">0.95</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="t-mu-3-7">Select t/μ₀:</label>
+                    <select id="t-mu-3-7" class="rounded-lg">
+                        <option value="0.7">0.7</option>
+                        <option value="0.9">0.9</option>
+                        <option value="1">1</option>
+                        <option value="1.5">1.5</option>
+                        <option value="2">2</option>
+                        <option value="2.5">2.5</option>
+                        <option value="3">3</option>
+                        <option value="3.5">3.5</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="c-value-3-7">Select c:</label>
+                    <select id="c-value-3-7" class="rounded-lg"></select>
                 </div>
             </div>
+
+            <button id="lookup-button-3-7" class="btn font-semibold py-3 px-6 rounded-lg hover:bg-blue-700">
+                Get Minimum Sample Size
+            </button>
+
+            <!-- Result Section for the first card -->
+            <div id="result-box-3-7" class="mt-8 p-6 rounded-lg border-2 bg-gray-50 transition-all duration-300">
+                <p class="text-gray-700 font-medium">The minimum sample size is:</p>
+                <p id="result-value-3-7" class="text-4xl font-bold text-gray-800 mt-2">--</p>
+            </div>
         </div>
+
+        <!-- Second Dashboard Card -->
+        <div class="dashboard-card text-center">
+            <h2 class="text-2xl font-normal text-gray-800 mb-4">Operating Characteristic values of the sampling plan (n, c = 5, t/μ₀) for a given P* for the specified average life of Half Normal Distribution under IPD (ρ = 0.5).</h2>
+            <!-- Input Section for the second card -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-6">
+                <div class="input-group">
+                    <label for="p-star-3-11">Select P*:</label>
+                    <select id="p-star-3-11" class="rounded-lg">
+                        <option value="0.75">0.75</option>
+                        <option value="0.9">0.9</option>
+                        <option value="0.95">0.95</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="t-mu-3-11">Select t/μ₀:</label>
+                    <select id="t-mu-3-11" class="rounded-lg"></select>
+                </div>
+                <div class="input-group">
+                    <label for="n-value-3-11">Select n:</label>
+                    <select id="n-value-3-11" class="rounded-lg"></select>
+                </div>
+            </div>
+
+            <!-- Result Section for the second card -->
+            <div id="result-box-3-11" class="mt-8 p-6 rounded-lg border-2 bg-gray-50 transition-all duration-300">
+                <p class="text-gray-700 font-medium mb-2">The full row of μ/μ₀ values is:</p>
+                <div id="result-container-3-11" class="result-grid-container">
+                    <p id="no-result-3-11" class="text-gray-500">Select P* and t/μ₀ values to get the results.</p>
+                </div>
+            </div>
+
+            <!-- Chart Section for the second card -->
+            <div class="mt-8 chart-container">
+                 <div id="options-box-3-11" class="options-box hidden">
+                    <h3 class="font-bold mb-2">Selected Options:</h3>
+                    <div class="flex-row-container">
+                        <div class="input-group">
+                            <label>P*:</label>
+                            <select id="p-star-option-3-11" class="rounded-lg"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>t/μ₀:</label>
+                            <select id="t-mu-option-3-11" class="rounded-lg"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>n:</label>
+                            <select id="n-option-3-11" class="rounded-lg"></select>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="mu-chart-3-11"></canvas>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // Corrected data from Table 3.11 with a fixed C=5, extracted from the provided document
-        const tableData = {
-            "0.75": {
-                "0.7": {
-                    n_value: 12,
-                    mu_values: ["0.0745", "0.2237", "0.4034", "0.5631", "0.6864", "0.7756", "0.8386", "0.8827", "0.9137", "0.9357"]
+        window.onload = function() {
+            // Data for the first card's table
+            const tableData3_7 = {
+                "0.75": {
+                    c_values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    "0.7": [3, 6, 8, 10, 12, 13, 15, 17, 19, 20],
+                    "0.9": [2, 5, 6, 8, 9, 11, 12, 14, 15, 16],
+                    "1": [2, 4, 6, 7, 9, 10, 11, 13, 14, 15],
+                    "1.5": [1, 3, 4, 5, 6, 6, 8, 9, 9, 11],
+                    "2": [2, 3, 4, 5, 6, 7, 7, 8, 10, 10],
+                    "2.5": [1, 2, 3, 4, 5, 6, 7, 8, 8, 9],
+                    "3": [1, 2, 3, 4, 5, 6, 7, 7, 8, 9],
+                    "3.5": [1, 2, 3, 4, 5, 6, 6, 7, 8, 9],
+                    "4": [1, 2, 3, 4, 5, 6, 6, 7, 8, 9],
                 },
                 "0.9": {
-                    n_value: 9,
-                    mu_values: ["0.1178", "0.2799", "0.4572", "0.6078", "0.7212", "0.8019", "0.8583", "0.8974", "0.9248", "0.9442"]
+                    c_values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    "0.7": [5, 8, 10, 12, 15, 17, 19, 20, 22, 24],
+                    "0.9": [4, 6, 8, 10, 12, 13, 15, 16, 18, 19],
+                    "1": [4, 6, 8, 9, 11, 12, 14, 15, 16, 18],
+                    "1.5": [3, 4, 5, 6, 8, 8, 10, 10, 12, 12],
+                    "2": [2, 4, 5, 7, 7, 9, 9, 11, 11, 13],
+                    "2.5": [2, 4, 5, 6, 6, 7, 8, 9, 10, 11],
+                    "3": [2, 3, 4, 5, 6, 7, 8, 9, 10, 10],
+                    "3.5": [2, 3, 4, 5, 6, 7, 8, 9, 10, 10],
+                    "4": [2, 3, 4, 5, 6, 7, 8, 9, 9, 10],
                 },
-                "1": {
-                    n_value: 9,
-                    mu_values: ["0.0816", "0.2097", "0.3701", "0.5218", "0.6457", "0.7397", "0.8085", "0.8583", "0.8941", "0.9201"]
-                },
-                "1.5": {
-                    n_value: 6,
-                    mu_values: ["0.1871", "0.3047", "0.4427", "0.5719", "0.6785", "0.7608", "0.8221", "0.8671", "0.8999", "0.9239"]
-                },
-                "2": {
-                    n_value: 6,
-                    mu_values: ["0.1328", "0.1871", "0.272", "0.3733", "0.4766", "0.5719", "0.6542", "0.7226", "0.7779", "0.8221"]
-                },
-                "2.5": {
-                    n_value: 5,
-                    mu_values: ["0.2429", "0.2756", "0.3372", "0.4166", "0.5015", "0.583", "0.6561", "0.7189", "0.7711", "0.8139"]
-                },
-                "3": {
-                    n_value: 5,
-                    mu_values: ["0.2377", "0.2502", "0.2841", "0.3372", "0.4027", "0.4732", "0.5431", "0.6085", "0.6673", "0.7189"]
-                },
-                "3.5": {
-                    n_value: 5,
-                    mu_values: ["0.2367", "0.2408", "0.2576", "0.2906", "0.3372", "0.3928", "0.4529", "0.5135", "0.5718", "0.626"]
-                },
-                "4": {
-                    n_value: 5,
-                    mu_values: ["0.2366", "0.2377", "0.2452", "0.2644", "0.2958", "0.3372", "0.3856", "0.4377", "0.4909", "0.5431"]
-                },
-            },
-            "0.9": {
-                "0.7": {
-                    n_value: 15,
-                    mu_values: ["0.0174", "0.0857", "0.2098", "0.3563", "0.4946", "0.6108", "0.7026", "0.7728", "0.8257", "0.8655"]
-                },
-                "0.9": {
-                    n_value: 12,
-                    mu_values: ["0.0212", "0.0875", "0.2044", "0.344", "0.4785", "0.5938", "0.6864", "0.7584", "0.8133", "0.855"]
-                },
-                "1": {
-                    n_value: 11,
-                    mu_values: ["0.0233", "0.0876", "0.1999", "0.3352", "0.4673", "0.5821", "0.6753", "0.7484", "0.8047", "0.8477"]
-                },
-                "1.5": {
-                    n_value: 8,
-                    mu_values: ["0.0449", "0.1011", "0.193", "0.3069", "0.4245", "0.5328", "0.6257", "0.702", "0.7631", "0.8115"]
-                },
-                "2": {
-                    n_value: 7,
-                    mu_values: ["0.0607", "0.095", "0.1558", "0.2385", "0.3332", "0.4297", "0.5204", "0.6011", "0.6703", "0.7284"]
-                },
-                "2.5": {
-                    n_value: 6,
-                    mu_values: ["0.118", "0.1407", "0.1871", "0.2532", "0.3318", "0.4151", "0.4966", "0.5719", "0.6389", "0.6969"]
-                },
-                "3": {
-                    n_value: 6,
-                    mu_values: ["0.1145", "0.1229", "0.1468", "0.1871", "0.2411", "0.3047", "0.3733", "0.4427", "0.5096", "0.5719"]
-                },
-                "3.5": {
-                    n_value: 6,
-                    mu_values: ["0.1138", "0.1165", "0.128", "0.1516", "0.1871", "0.2327", "0.2859", "0.3436", "0.4032", "0.4622"]
-                },
-                "4": {
-                    n_value: 6,
-                    mu_values: ["0.1137", "0.1145", "0.1195", "0.1328", "0.1554", "0.1871", "0.2265", "0.272", "0.3216", "0.3733"]
-                },
-            },
-            "0.95": {
-                "0.7": {
-                    n_value: 17,
-                    mu_values: ["0.006", "0.0417", "0.1263", "0.2469", "0.3775", "0.4987", "0.6022", "0.6863", "0.7528", "0.8048"]
-                },
-                "0.9": {
-                    n_value: 13,
-                    mu_values: ["0.0113", "0.0563", "0.1491", "0.2733", "0.4034", "0.5221", "0.6222", "0.703", "0.7666", "0.8161"]
-                },
-                "1": {
-                    n_value: 12,
-                    mu_values: ["0.0119", "0.0541", "0.141", "0.2593", "0.3858", "0.5033", "0.6041", "0.6864", "0.752", "0.8035"]
-                },
-                "1.5": {
-                    n_value: 9,
-                    mu_values: ["0.02", "0.0533", "0.1178", "0.2097", "0.316", "0.4231", "0.5218", "0.6078", "0.6802", "0.7397"]
-                },
-                "2": {
-                    n_value: 8,
-                    mu_values: ["0.0257", "0.0449", "0.0834", "0.1432", "0.2202", "0.3069", "0.3956", "0.4803", "0.5576", "0.6257"]
-                },
-                "2.5": {
-                    n_value: 7,
-                    mu_values: ["0.0521", "0.0655", "0.095", "0.1416", "0.2033", "0.2755", "0.3527", "0.4297", "0.5029", "0.5701"]
-                },
-                "3": {
-                    n_value: 7,
-                    mu_values: ["0.0501", "0.0549", "0.0692", "0.095", "0.1327", "0.1813", "0.2385", "0.301", "0.3656", "0.4297"]
-                },
-                "3.5": {
-                    n_value: 7,
-                    mu_values: ["0.0497", "0.0512", "0.0579", "0.0721", "0.095", "0.1266", "0.1665", "0.2131", "0.2648", "0.3193"]
-                },
-                "4": {
-                    n_value: 7,
-                    mu_values: ["0.0496", "0.0501", "0.053", "0.0607", "0.0745", "0.095", "0.1222", "0.1558", "0.1949", "0.2385"]
-                },
-            }
-        };
-
-        const pStarSelect = document.getElementById('p-star');
-        const tMuSelect = document.getElementById('t-mu');
-        const nValueSelect = document.getElementById('n-value');
-        const resultContainer = document.getElementById('result-container');
-        const resultBox = document.getElementById('result-box');
-        const pStarDisplay = document.getElementById('p-star-display');
-        const tMuDisplay = document.getElementById('t-mu-display');
-        const nDisplay = document.getElementById('n-display');
-        const optionsBox = document.getElementById('options-box');
-
-        // New button elements for interactive options box
-        const pStarOptionButton = document.getElementById('p-star-option');
-        const tMuOptionButton = document.getElementById('t-mu-option');
-        const nOptionButton = document.getElementById('n-option');
-
-        const muMu0Headers = ["0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"];
-
-        // Register the datalabels plugin
-        Chart.register(ChartDataLabels);
-
-        // Chart setup
-        const ctx = document.getElementById('mu-chart').getContext('2d');
-        const muChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: muMu0Headers,
-                datasets: [{
-                    label: 'μ/μ₀ Values',
-                    data: [],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderWidth: 2,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#3b82f6',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y;
-                                }
-                                return label;
-                            }
-                        }
-                    },
-                    datalabels: {
-                        display: true,
-                        color: '#333',
-                        font: {
-                            weight: 'bold'
-                        },
-                        // Positions the label slightly above the data point
-                        anchor: 'end',
-                        align: 'end',
-                        offset: 10,
-                        // This formatter function ensures that only valid data points are labeled
-                        formatter: function(value, context) {
-                            return value;
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'μ/μ₀ Values vs. τ/τ₀',
-                        font: {
-                            size: 18,
-                            weight: 'bold'
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'τ/τ₀',
-                            font: {
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'μ/μ₀',
-                            font: {
-                                weight: 'bold'
-                            }
-                        },
-                        min: 0,
-                        max: 1
-                    }
+                "0.95": {
+                    c_values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    "0.7": [6, 9, 12, 14, 17, 19, 21, 23, 25, 27],
+                    "0.9": [5, 8, 10, 12, 13, 15, 17, 18, 20, 21],
+                    "1": [5, 7, 9, 11, 12, 14, 15, 17, 18, 20],
+                    "1.5": [3, 5, 7, 8, 9, 9, 11, 11, 12, 15],
+                    "2": [4, 5, 6, 7, 8, 10, 10, 12, 14, 13],
+                    "2.5": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                    "3": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                    "3.5": [3, 4, 5, 6, 7, 8, 9, 10, 11, 11],
+                    "4": [3, 4, 5, 6, 7, 8, 9, 10, 10, 11],
                 }
-            },
-            plugins: [ChartDataLabels]
-        });
+            };
 
-        function updateTMuDropdown() {
-            const pStar = pStarSelect.value;
-            const tMuOptions = Object.keys(tableData[pStar] || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
-            
-            tMuSelect.innerHTML = '';
-            tMuOptions.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option;
-                opt.textContent = option;
-                tMuSelect.appendChild(opt);
-            });
-            updateNValueDropdown();
-        }
+            // Data for the second card's table
+            const tableData3_11 = {
+                "0.75": {
+                    "0.7": {
+                        n_value: 12,
+                        mu_values: ["0.0745", "0.2237", "0.4034", "0.5631", "0.6864", "0.7756", "0.8386", "0.8827", "0.9137", "0.9357"]
+                    },
+                    "0.9": {
+                        n_value: 9,
+                        mu_values: ["0.1178", "0.2799", "0.4572", "0.6078", "0.7212", "0.8019", "0.8583", "0.8974", "0.9248", "0.9442"]
+                    },
+                    "1": {
+                        n_value: 9,
+                        mu_values: ["0.0816", "0.2097", "0.3701", "0.5218", "0.6457", "0.7397", "0.8085", "0.8583", "0.8941", "0.9201"]
+                    },
+                    "1.5": {
+                        n_value: 6,
+                        mu_values: ["0.1871", "0.3047", "0.4427", "0.5719", "0.6785", "0.7608", "0.8221", "0.8671", "0.8999", "0.9239"]
+                    },
+                    "2": {
+                        n_value: 6,
+                        mu_values: ["0.1328", "0.1871", "0.272", "0.3733", "0.4766", "0.5719", "0.6542", "0.7226", "0.7779", "0.8221"]
+                    },
+                    "2.5": {
+                        n_value: 5,
+                        mu_values: ["0.2429", "0.2756", "0.3372", "0.4166", "0.5015", "0.583", "0.6561", "0.7189", "0.7711", "0.8139"]
+                    },
+                    "3": {
+                        n_value: 5,
+                        mu_values: ["0.2377", "0.2502", "0.2841", "0.3372", "0.4027", "0.4732", "0.5431", "0.6085", "0.6673", "0.7189"]
+                    },
+                    "3.5": {
+                        n_value: 5,
+                        mu_values: ["0.2367", "0.2408", "0.2576", "0.2906", "0.3372", "0.3928", "0.4529", "0.5135", "0.5718", "0.626"]
+                    },
+                    "4": {
+                        n_value: 5,
+                        mu_values: ["0.2366", "0.2377", "0.2452", "0.2644", "0.2958", "0.3372", "0.3856", "0.4377", "0.4909", "0.5431"]
+                    },
+                },
+                "0.9": {
+                    "0.7": {
+                        n_value: 15,
+                        mu_values: ["0.0174", "0.0857", "0.2098", "0.3563", "0.4946", "0.6108", "0.7026", "0.7728", "0.8257", "0.8655"]
+                    },
+                    "0.9": {
+                        n_value: 12,
+                        mu_values: ["0.0212", "0.0875", "0.2044", "0.344", "0.4785", "0.5938", "0.6864", "0.7584", "0.8133", "0.855"]
+                    },
+                    "1": {
+                        n_value: 11,
+                        mu_values: ["0.0233", "0.0876", "0.1999", "0.3352", "0.4673", "0.5821", "0.6753", "0.7484", "0.8047", "0.8477"]
+                    },
+                    "1.5": {
+                        n_value: 8,
+                        mu_values: ["0.0449", "0.1011", "0.193", "0.3069", "0.4245", "0.5328", "0.6257", "0.702", "0.7631", "0.8115"]
+                    },
+                    "2": {
+                        n_value: 7,
+                        mu_values: ["0.0607", "0.095", "0.1558", "0.2385", "0.3332", "0.4297", "0.5204", "0.6011", "0.6703", "0.7284"]
+                    },
+                    "2.5": {
+                        n_value: 6,
+                        mu_values: ["0.118", "0.1407", "0.1871", "0.2532", "0.3318", "0.4151", "0.4966", "0.5719", "0.6389", "0.6969"]
+                    },
+                    "3": {
+                        n_value: 6,
+                        mu_values: ["0.1145", "0.1229", "0.1468", "0.1871", "0.2411", "0.3047", "0.3733", "0.4427", "0.5096", "0.5719"]
+                    },
+                    "3.5": {
+                        n_value: 6,
+                        mu_values: ["0.1138", "0.1165", "0.128", "0.1516", "0.1871", "0.2327", "0.2859", "0.3436", "0.4032", "0.4622"]
+                    },
+                    "4": {
+                        n_value: 6,
+                        mu_values: ["0.1137", "0.1145", "0.1195", "0.1328", "0.1554", "0.1871", "0.2265", "0.272", "0.3216", "0.3733"]
+                    },
+                },
+                "0.95": {
+                    "0.7": {
+                        n_value: 17,
+                        mu_values: ["0.006", "0.0417", "0.1263", "0.2469", "0.3775", "0.4987", "0.6022", "0.6863", "0.7528", "0.8048"]
+                    },
+                    "0.9": {
+                        n_value: 13,
+                        mu_values: ["0.0113", "0.0563", "0.1491", "0.2733", "0.4034", "0.5221", "0.6222", "0.703", "0.7666", "0.8161"]
+                    },
+                    "1": {
+                        n_value: 12,
+                        mu_values: ["0.0119", "0.0541", "0.141", "0.2593", "0.3858", "0.5033", "0.6041", "0.6864", "0.752", "0.8035"]
+                    },
+                    "1.5": {
+                        n_value: 9,
+                        mu_values: ["0.02", "0.0533", "0.1178", "0.2097", "0.316", "0.4231", "0.5218", "0.6078", "0.6802", "0.7397"]
+                    },
+                    "2": {
+                        n_value: 8,
+                        mu_values: ["0.0257", "0.0449", "0.0834", "0.1432", "0.2202", "0.3069", "0.3956", "0.4803", "0.5576", "0.6257"]
+                    },
+                    "2.5": {
+                        n_value: 7,
+                        mu_values: ["0.0521", "0.0655", "0.095", "0.1416", "0.2033", "0.2755", "0.3527", "0.4297", "0.5029", "0.5701"]
+                    },
+                    "3": {
+                        n_value: 7,
+                        mu_values: ["0.0501", "0.0549", "0.0692", "0.095", "0.1327", "0.1813", "0.2385", "0.301", "0.3656", "0.4297"]
+                    },
+                    "3.5": {
+                        n_value: 7,
+                        mu_values: ["0.0497", "0.0512", "0.0579", "0.0721", "0.095", "0.1266", "0.1665", "0.2131", "0.2648", "0.3193"]
+                    },
+                    "4": {
+                        n_value: 7,
+                        mu_values: ["0.0496", "0.0501", "0.053", "0.0607", "0.0745", "0.095", "0.1222", "0.1558", "0.1949", "0.2385"]
+                    },
+                }
+            };
 
-        function updateNValueDropdown() {
-            const pStar = pStarSelect.value;
-            const tMu = tMuSelect.value;
-            
-            const data = tableData[pStar]?.[tMu];
-            
-            nValueSelect.innerHTML = '';
-            if (data) {
-                const opt = document.createElement('option');
-                opt.value = data.n_value;
-                opt.textContent = data.n_value;
-                nValueSelect.appendChild(opt);
-            }
-            updateResultDisplay();
-        }
+            // --- Logic for the first card ---
+            const pStarSelect3_7 = document.getElementById('p-star-3-7');
+            const tMuSelect3_7 = document.getElementById('t-mu-3-7');
+            const cValueSelect3_7 = document.getElementById('c-value-3-7');
+            const lookupButton3_7 = document.getElementById('lookup-button-3-7');
+            const resultValue3_7 = document.getElementById('result-value-3-7');
+            const resultBox3_7 = document.getElementById('result-box-3-7');
 
-        function updateResultDisplay() {
-            const pStar = pStarSelect.value;
-            const tMu = tMuSelect.value;
-            const nValue = nValueSelect.value;
-            
-            resultContainer.innerHTML = '';
-            
-            const data = tableData[pStar]?.[tMu];
-
-            if (data && String(data.n_value) === nValue && data.mu_values) {
-                // Update the text display
-                data.mu_values.forEach((value, index) => {
-                    if(index < muMu0Headers.length) {
-                        const div = document.createElement('div');
-                        div.className = 'result-item flex flex-col items-center';
-                        div.innerHTML = `<p class="text-sm font-semibold text-gray-700">μ/μ₀=${muMu0Headers[index]}</p><p class="text-xl font-bold text-blue-600 mt-1">${value}</p>`;
-                        resultContainer.appendChild(div);
-                    }
+            const populateCValues = () => {
+                const pStar = pStarSelect3_7.value;
+                const cValues = tableData3_7[pStar].c_values;
+                cValueSelect3_7.innerHTML = '';
+                cValues.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c;
+                    option.textContent = c;
+                    cValueSelect3_7.appendChild(option);
                 });
+            };
 
-                resultBox.classList.remove('result-not-found');
-                resultBox.classList.add('result-found');
+            pStarSelect3_7.addEventListener('change', populateCValues);
+
+            lookupButton3_7.addEventListener('click', () => {
+                const pStar = pStarSelect3_7.value;
+                const tMu = tMuSelect3_7.value;
+                const cValue = parseInt(cValueSelect3_7.value, 10);
+
+                const pStarTable = tableData3_7[pStar];
+                if (!pStarTable) {
+                    resultValue3_7.textContent = 'Error: P* table not found.';
+                    return;
+                }
+
+                const cIndex = pStarTable.c_values.indexOf(cValue);
+                if (cIndex === -1) {
+                    resultValue3_7.textContent = 'Error: c value not found for this P*.';
+                    return;
+                }
+
+                const tMuColumn = pStarTable[tMu];
+                if (!tMuColumn) {
+                    resultValue3_7.textContent = 'Error: t/μ₀ column not found.';
+                    return;
+                }
+
+                const finalValue = tMuColumn[cIndex];
+
+                if (finalValue !== undefined) {
+                    resultValue3_7.textContent = finalValue;
+                    resultBox3_7.classList.remove('result-not-found');
+                    resultBox3_7.classList.add('result-found');
+                } else {
+                    resultValue3_7.textContent = 'Value Not Found';
+                    resultBox3_7.classList.remove('result-found');
+                    resultBox3_7.classList.add('result-not-found');
+                }
+            });
+
+            // Initial call for the first card
+            populateCValues();
+
+            // --- Logic for the second card ---
+            const pStarSelect3_11 = document.getElementById('p-star-3-11');
+            const tMuSelect3_11 = document.getElementById('t-mu-3-11');
+            const nValueSelect3_11 = document.getElementById('n-value-3-11');
+            const resultContainer3_11 = document.getElementById('result-container-3-11');
+            const resultBox3_11 = document.getElementById('result-box-3-11');
+            const optionsBox3_11 = document.getElementById('options-box-3-11');
+            const pStarOptionSelect3_11 = document.getElementById('p-star-option-3-11');
+            const tMuOptionSelect3_11 = document.getElementById('t-mu-option-3-11');
+            const nOptionSelect3_11 = document.getElementById('n-option-3-11');
+
+            const muMu0Headers = ["0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"];
+
+            Chart.register(ChartDataLabels);
+
+            const ctx3_11 = document.getElementById('mu-chart-3-11').getContext('2d');
+            const muChart3_11 = new Chart(ctx3_11, {
+                type: 'line',
+                data: {
+                    labels: muMu0Headers,
+                    datasets: [{
+                        label: 'μ/μ₀ Values',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#3b82f6',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            color: '#333',
+                            font: {
+                                weight: 'bold'
+                            },
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 10,
+                            formatter: function(value, context) {
+                                return value;
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Reliability Operating Characteristic Curve',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'μ/μ₀',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Pa(p)',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0,
+                            max: 1
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+
+            function updateTMuDropdown3_11() {
+                const pStar = pStarSelect3_11.value;
+                const tMuOptions = Object.keys(tableData3_11[pStar] || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
                 
-                // Update the chart
-                muChart.data.datasets[0].data = data.mu_values.map(v => parseFloat(v));
-                muChart.update();
-
-                // Update the options box
-                pStarDisplay.textContent = pStar;
-                tMuDisplay.textContent = tMu;
-                nDisplay.textContent = nValue;
-                optionsBox.classList.remove('hidden');
-            } else {
-                resultContainer.innerHTML = `<p class="text-gray-500">Select P* and t/μ₀ values to get the results.</p>`;
-                resultBox.classList.remove('result-found');
-                resultBox.classList.add('result-not-found');
-                
-                // Clear the chart
-                muChart.data.datasets[0].data = [];
-                muChart.update();
-
-                // Hide the options box
-                optionsBox.classList.add('hidden');
+                tMuSelect3_11.innerHTML = '';
+                tMuOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.textContent = option;
+                    tMuSelect3_11.appendChild(opt);
+                });
+                updateNValueDropdown3_11();
             }
-        }
-        
-        // Event listeners for the interactive options box
-        pStarOptionButton.addEventListener('click', () => {
-            pStarSelect.value = pStarDisplay.textContent;
-            updateTMuDropdown();
-        });
 
-        tMuOptionButton.addEventListener('click', () => {
-            tMuSelect.value = tMuDisplay.textContent;
-            updateNValueDropdown();
-        });
+            function updateNValueDropdown3_11() {
+                const pStar = pStarSelect3_11.value;
+                const tMu = tMuSelect3_11.value;
+                
+                const data = tableData3_11[pStar]?.[tMu];
+                
+                nValueSelect3_11.innerHTML = '';
+                if (data) {
+                    const opt = document.createElement('option');
+                    opt.value = data.n_value;
+                    opt.textContent = data.n_value;
+                    nValueSelect3_11.appendChild(opt);
+                }
+                updateResultDisplay3_11();
+            }
 
-        nOptionButton.addEventListener('click', () => {
-            nValueSelect.value = nDisplay.textContent;
-            updateResultDisplay();
-        });
+            function updateOptionsBoxSelects3_11() {
+                pStarOptionSelect3_11.innerHTML = pStarSelect3_11.innerHTML;
+                pStarOptionSelect3_11.value = pStarSelect3_11.value;
 
-        // Initial call to populate the dashboard on load
-        updateTMuDropdown();
+                const pStar = pStarOptionSelect3_11.value;
+                const tMuOptions = Object.keys(tableData3_11[pStar] || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
+                tMuOptionSelect3_11.innerHTML = '';
+                tMuOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.textContent = option;
+                    tMuOptionSelect3_11.appendChild(opt);
+                });
+                tMuOptionSelect3_11.value = tMuSelect3_11.value;
 
-        // Event listeners to update the dashboard on change
-        pStarSelect.addEventListener('change', updateTMuDropdown);
-        tMuSelect.addEventListener('change', updateNValueDropdown);
-        nValueSelect.addEventListener('change', updateResultDisplay);
+                const tMu = tMuOptionSelect3_11.value;
+                const data = tableData3_11[pStar]?.[tMu];
+                nOptionSelect3_11.innerHTML = '';
+                if (data) {
+                    const opt = document.createElement('option');
+                    opt.value = data.n_value;
+                    opt.textContent = data.n_value;
+                    nOptionSelect3_11.appendChild(opt);
+                }
+                nOptionSelect3_11.value = nValueSelect3_11.value;
+            }
 
+            function updateResultDisplay3_11() {
+                const pStar = pStarSelect3_11.value;
+                const tMu = tMuSelect3_11.value;
+                const nValue = nValueSelect3_11.value;
+                
+                resultContainer3_11.innerHTML = '';
+                
+                const data = tableData3_11[pStar]?.[tMu];
+
+                if (data && String(data.n_value) === nValue && data.mu_values) {
+                    const firstRow = document.createElement('div');
+                    firstRow.className = 'result-grid-row';
+                    const secondRow = document.createElement('div');
+                    secondRow.className = 'result-grid-row';
+                    
+                    data.mu_values.forEach((value, index) => {
+                        if(index < muMu0Headers.length) {
+                            const div = document.createElement('div');
+                            div.className = 'result-item flex flex-col items-center';
+                            div.innerHTML = `<p class="text-sm font-semibold text-gray-700">μ/μ₀=${muMu0Headers[index]}</p><p class="text-xl font-bold text-blue-600 mt-1">${value}</p>`;
+                            if (index < 5) {
+                                firstRow.appendChild(div);
+                            } else {
+                                secondRow.appendChild(div);
+                            }
+                        }
+                    });
+
+                    resultContainer3_11.appendChild(firstRow);
+                    resultContainer3_11.appendChild(secondRow);
+
+                    resultBox3_11.classList.remove('result-not-found');
+                    resultBox3_11.classList.add('result-found');
+                    
+                    muChart3_11.data.datasets[0].data = data.mu_values.map(v => parseFloat(v));
+                    muChart3_11.update();
+
+                    updateOptionsBoxSelects3_11();
+                    optionsBox3_11.classList.remove('hidden');
+                } else {
+                    resultContainer3_11.innerHTML = `<p class="text-gray-500">Select P* and t/μ₀ values to get the results.</p>`;
+                    resultBox3_11.classList.remove('result-found');
+                    resultBox3_11.classList.add('result-not-found');
+                    
+                    muChart3_11.data.datasets[0].data = [];
+                    muChart3_11.update();
+
+                    optionsBox3_11.classList.add('hidden');
+                }
+            }
+            
+            // Event Listeners for the second card
+            pStarSelect3_11.addEventListener('change', updateTMuDropdown3_11);
+            tMuSelect3_11.addEventListener('change', updateNValueDropdown3_11);
+            nValueSelect3_11.addEventListener('change', updateResultDisplay3_11);
+            pStarOptionSelect3_11.addEventListener('change', (event) => {
+                pStarSelect3_11.value = event.target.value;
+                updateTMuDropdown3_11();
+            });
+            tMuOptionSelect3_11.addEventListener('change', (event) => {
+                tMuSelect3_11.value = event.target.value;
+                updateNValueDropdown3_11();
+            });
+            nOptionSelect3_11.addEventListener('change', (event) => {
+                nValueSelect3_11.value = event.target.value;
+                updateResultDisplay3_11();
+            });
+
+            // Initial call for the second card
+            updateTMuDropdown3_11();
+        };
     </script>
 </body>
 </html>
